@@ -1,41 +1,37 @@
-mod leash;
 mod gateway;
-
-use std::env;
+mod node;
 
 #[tokio::main]
 async fn main() {
+    
+    let args: Vec<String> = std::env::args().collect();
 
-    let args: Vec<String> = env::args().collect();
-
-    let etcd_url = "http://127.0.0.1:2379";
+    let etcd_url = "localhost:2379";
 
     if args.len() < 2 {
         println!("Usage:");
-        println!("Gateway: cargo run -- gateway 8080");
-        println!("Leash:   cargo run -- leash node-1 8081");
+        println!("  cargo run -- gateway <port>");
+        println!("  cargo run -- node <IP:PORT> <NAME>");
         return;
     }
 
-    
     match args[1].as_str() {
 
         "gateway" => {
-            let port = args[2].parse().expect("Invalid port");
+            let port = args.get(2).and_then(|p| p.parse().ok()).unwrap_or(8080);
             gateway::run_gateway(etcd_url, port).await;
-        }
-        "leash" => {
-            let node_id = args[2].clone();
-            let engine_port = args[3].parse().expect("Invalid engine port");
-            leash::run_leash(node_id, etcd_url, engine_port).await;
-        }
-        _ => println!("Unknown command"),
+        },
+        "node" => {
+            if args.len() < 4 {
+                println!("Error: Node requires address and name.");
+                return;
+            }
+
+            let addr = &args[2];
+            let name = &args[3];
+            node::run_node(etcd_url, addr, name).await;
+        },
+        _ => println!("Unknown command. Use 'gateway' or 'node'."),
+
     }
-
-
-
-
 }
-
-
-

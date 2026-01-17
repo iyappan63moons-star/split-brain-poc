@@ -46,6 +46,35 @@ Proof of Concepts in POC:
 
 
 
+Gateway 
+
+-
+
+primary 
+
+secondary  (s1)
+
+secondary (s2)
+
+(.log)
+
+system signal interval
+
+sequencer id
 
 
+primary job: 
+    1. write in log file first
+    2. forward to secondary. 
 
+secondary:
+    1. write in log file first
+    2. forward to secondary. 
+
+
+cat central_order_book.log | awk -F'[][]' '{print $2}' | sort | uniq -d
+
+
+no split brain
+no duplicate execution
+no missing data after failover
