@@ -1,10 +1,11 @@
 
+### Distributed Sequencer & Leader Election POC
+
 Split Brain Issue:
 
     POC to address the splut brain issue during Secondary’s election. Leash a proprietary solution to provide access over the Engine Primary role from a secondary when primary is down. 
 
     Expected:
-
         1. High performant gateway proxying the primary.
         2. Leash program should Identify the nodes health. 
         3. Secondary should perform an attempt to get the access to the leash.
@@ -86,3 +87,7 @@ cargo run -- node 127.0.0.1:8082 S1
 cargo run -- node 127.0.0.1:8083 S2
 
 python3 producer.py
+
+
+etcdctl del "" --prefix
+rm central_order_book.log
