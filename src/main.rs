@@ -10,8 +10,8 @@ async fn main() {
 
     if args.len() < 2 {
         println!("Usage:");
-        println!("  cargo run -- gateway <port>");
-        println!("  cargo run -- node <IP:PORT> <NAME>");
+        println!("cargo run -- gateway <port>");
+        println!("cargo run -- node <IP:PORT> <NAME>");
         return;
     }
 

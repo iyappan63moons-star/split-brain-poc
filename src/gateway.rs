@@ -48,9 +48,10 @@ pub async fn run_gateway(etcd_url: &str, port: u16) {
             let data = String::from_utf8_lossy(&buf[..n]).trim().to_string();
             let seq_id = GLOBAL_SEQ.fetch_add(1, Ordering::SeqCst);
             let ts = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_nanos();
-            let payload = format!("[SEQ:{}][TS:{}] DATA:{}\n", seq_id, ts, data);
+            let payload = format!("[SEQ:{}] [TS:{}]      Data:{}\n", seq_id, ts, data);
 
-            // retry loop (data send)
+            // retry loop (data send) and leader election target sent data.
+            
             loop {
                 let target = state_handle.load();
                 if **target != "0.0.0.0:0" {

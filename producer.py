@@ -15,7 +15,7 @@ def send_orders():
                 s.settimeout(2)
                 s.connect((gateway_ip, gateway_port))
                 
-                message = f"MSG_{order_id}"
+                message = f"Order Id: {order_id}"
                 s.sendall(message.encode())
                 
                 print(f"Sent: {message}")

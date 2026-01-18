@@ -30,7 +30,7 @@ pub async fn run_node(etcd_url: &str, node_addr: &str, node_name_ref: &str) {
 
             let (mut keeper, _) = client.lease_keep_alive(lease_id).await.unwrap();
 
-            let name_clone = node_name.clone();
+            // let name_clone = node_name.clone();
 
             tokio::spawn(async move {
                 loop {
@@ -50,7 +50,7 @@ pub async fn run_node(etcd_url: &str, node_addr: &str, node_name_ref: &str) {
                     let msg = String::from_utf8_lossy(&buf[..n]);
                     let mut file = OpenOptions::new().append(true).create(true).open("central_order_book.log").await.unwrap();
                     file.write_all(msg.as_bytes()).await.unwrap();
-                    println!("{} logged data.", node_name);
+                    println!("{} log data: {}.", node_name, msg.trim());
 
                 }
 
