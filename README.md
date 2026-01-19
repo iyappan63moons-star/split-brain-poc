@@ -1,7 +1,7 @@
 
 ### Distributed Sequencer & Leader Election POC
 
-Split Brain Issue:
+Q. Split Brain Issue:
 
     POC to address the splut brain issue during Secondary’s election. Leash a proprietary solution to provide access over the Engine Primary role from a secondary when primary is down. 
 
@@ -13,29 +13,14 @@ Split Brain Issue:
         5. Gateway should start sending the message to new Primary
 
 
-
-ETCD Methods:
-
-Client	    =>	Connecting to the "Source of Truth".
-Compare	    =>	Checking if a Leader already exists.
-TxnOp	    =>	Preparing to write the new Leader's IP.
-Txn     	=>	Ensuring the election is fair and has only one winner.
-PutOptions	=>	Setting the 5-second health check (Lease).
-
-
+Implementations: 
 
 ArcSwap: 
 A high-speed "address book" that lets the Gateway instantly
 switch to the new Leader’s IP without ever locking or slowing down 
 incoming traffic.
 
-copy_bidirectional: 
-A high-efficiency "digital bridge" that automatically pipes data back and forth between the 
-User and the Primary Engine at maximum speed.
-
-
-How fixed no split brain issue?:
-Atomic Nature of the election and the Fencing of the gateway.
+ETCD lock() lets a client acquire a distributed lock so only one process can access a shared resource at a time.
 
 
 Proof of Concepts in POC:
@@ -43,51 +28,69 @@ Proof of Concepts in POC:
         `etcdctl get engine/leader`
     2. Prove Health Monitoring (Watch)
         `etcdctl watch engine/leader`
-    
 
 
 
-Gateway 
+We got: 
 
--
-
-primary 
-
-secondary  (s1)
-
-secondary (s2)
-
-(.log)
-
-system signal interval
-
-sequencer id
+```
+1. No split brain
+2. No duplicate execution
+3. No missing data after failover
+```
 
 
-primary job: 
-    1. write in log file first
-    2. forward to secondary. 
+Diagram:
 
-secondary:
-    1. write in log file first
-    2. forward to secondary. 
+```
+                    Gateway 
 
 
+            primary (node 1)          secondary (s1) (node 2)
+
+
+                    secondary (s2) (node 2)
+
+
+
+                    Leash Gateway
+
+                
+
+                                
+`````
+                
+Workflow: 
+
+    Primary Job: 
+        1. Write in log file first
+        2. Forward to secondary. 
+
+    Secondary:
+        1. Write in log file first
+        2. Forward to secondary.
+
+
+
+Check to know any duplicates on log file:
 cat central_order_book.log | awk -F'[][]' '{print $2}' | sort | uniq -d
 
 
-no split brain
-no duplicate execution
-no missing data after failover
+How to run the project:
+```
+    cargo run -- gateway 8080
+    cargo run -- node 127.0.0.1:8081 P1
+    cargo run -- node 127.0.0.1:8082 S1
+    cargo run -- node 127.0.0.1:8083 S2
+```
+
+Remove existing log data and etcd leader data:
+```
+    etcdctl del "" --prefix
+    rm central_order_book.log
+```
 
 
-cargo run -- gateway 8080
-cargo run -- node 127.0.0.1:8081 P1
-cargo run -- node 127.0.0.1:8082 S1
-cargo run -- node 127.0.0.1:8083 S2
+Push Data to Gateway:
+``` python3 producer.py ```
 
-python3 producer.py
-
-
-etcdctl del "" --prefix
-rm central_order_book.log
